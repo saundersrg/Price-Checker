@@ -23,7 +23,7 @@
   button.primary { background: #1a73e8; color: #fff; border-color: #1a73e8; }
   button.primary:hover { background: #1558b0; }
   button:disabled { opacity: 0.5; cursor: default; }
-  .add-form { display: grid; grid-template-columns: 1fr 2fr 1.5fr auto auto; gap: 8px; align-items: start; margin-top: 8px; }
+  .add-form { display: grid; grid-template-columns: 1fr 2fr auto 1.5fr auto auto; gap: 8px; align-items: start; margin-top: 8px; }
   .add-form input { padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; width: 100%; box-sizing: border-box; }
   .test-result { font-size: 0.85rem; margin-top: 4px; min-height: 1.2em; }
   .test-result.ok { color: #0a0; }
@@ -66,6 +66,7 @@
   <div class="add-form">
     <input name="name" placeholder="Name" required>
     <input name="url" id="testUrl" placeholder="https://…" required>
+    <button type="button" id="detectBtn" onclick="autodetect()">Detect</button>
     <input name="selector" id="testSelector" placeholder="CSS selector" required>
     <button type="button" id="testBtn" onclick="testPrice()">Test price</button>
     <button type="submit" class="primary">Add to list</button>
@@ -74,6 +75,45 @@
 </form>
 
 <script>
+async function autodetect() {
+  const url = document.getElementById('testUrl').value.trim();
+  const btn = document.getElementById('detectBtn');
+  const result = document.getElementById('testResult');
+
+  if (!url) {
+    result.className = 'test-result err';
+    result.textContent = 'Enter a URL first.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Detecting…';
+  result.className = 'test-result';
+  result.textContent = 'Scanning page for price element…';
+
+  try {
+    const form = new FormData();
+    form.append('url', url);
+    const res = await fetch('/autodetect', { method: 'POST', body: form });
+    const data = await res.json();
+
+    if (data.error) {
+      result.className = 'test-result err';
+      result.textContent = 'Could not detect: ' + data.error;
+    } else {
+      document.getElementById('testSelector').value = data.selector;
+      result.className = 'test-result ok';
+      result.textContent = `Found: ${data.selector} → ${data.raw}`;
+    }
+  } catch (e) {
+    result.className = 'test-result err';
+    result.textContent = 'Request failed: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Detect';
+  }
+}
+
 async function testPrice() {
   const url = document.getElementById('testUrl').value.trim();
   const selector = document.getElementById('testSelector').value.trim();
@@ -103,7 +143,7 @@ async function testPrice() {
       result.textContent = 'Error: ' + data.error;
     } else {
       result.className = 'test-result ok';
-      result.textContent = `Got: $${data.price.toFixed(2)}  (raw: "${data.raw}")`;
+      result.textContent = `Got: ${data.raw}  (parsed: ${data.price})`;
     }
   } catch (e) {
     result.className = 'test-result err';

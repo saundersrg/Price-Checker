@@ -67,6 +67,19 @@ def remove():
     return redirect(url_for("index"))
 
 
+@app.route("/autodetect", methods=["POST"])
+def autodetect():
+    url = request.form.get("url", "").strip()
+    if not url:
+        return {"error": "URL is required"}, 400
+    if not _validate_url(url):
+        return {"error": "Invalid URL scheme — only http and https are allowed"}, 400
+    selector, price, raw = scraper.autodetect_selector(url)
+    if selector is None:
+        return {"error": raw}
+    return {"selector": selector, "price": price, "raw": raw}
+
+
 @app.route("/test-price", methods=["POST"])
 def test_price():
     url = request.form.get("url", "").strip()
