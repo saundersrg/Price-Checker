@@ -58,7 +58,7 @@ Start the local web server:
 python web.py
 ```
 
-Open [http://localhost:5000](http://localhost:5000). Fill in the item name, URL, and CSS selector, then click **Test price** to verify the selector pulls the right value before saving.
+Open [http://localhost:8080](http://localhost:8080). Fill in the item name, URL, and CSS selector, then click **Test price** to verify the selector pulls the right value before saving.
 
 ### Option 2 — CLI
 

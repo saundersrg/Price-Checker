@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Minimal web interface for managing the price watch list and testing selectors."""
 
+import os
 from pathlib import Path
+from urllib.parse import urlparse
 from flask import Flask, redirect, render_template, request, url_for
 import yaml
 from dotenv import load_dotenv
@@ -14,6 +16,12 @@ import scraper
 app = Flask(__name__)
 
 ITEMS_FILE = Path(__file__).parent / "items.yaml"
+
+
+def _validate_url(url: str) -> bool:
+    """Accept only http/https URLs — blocks file://, internal IPs via other schemes, etc."""
+    scheme = urlparse(url).scheme
+    return scheme in ("http", "https")
 
 
 def _load():
@@ -43,7 +51,7 @@ def add():
     name = request.form["name"].strip()
     url = request.form["url"].strip()
     selector = request.form["selector"].strip()
-    if name and url and selector:
+    if name and url and selector and _validate_url(url):
         items = _load()
         if not any(i["url"] == url for i in items):
             items.append({"name": name, "url": url, "selector": selector})
@@ -65,6 +73,8 @@ def test_price():
     selector = request.form.get("selector", "").strip()
     if not url or not selector:
         return {"error": "URL and selector are required"}, 400
+    if not _validate_url(url):
+        return {"error": "Invalid URL scheme — only http and https are allowed"}, 400
     price, raw = scraper.get_price(url, selector)
     if price is None:
         return {"error": raw or "Could not extract a price"}
@@ -73,4 +83,4 @@ def test_price():
 
 if __name__ == "__main__":
     db.init_db()
-    app.run(debug=True, port=5000)
+    app.run(debug=os.getenv("FLASK_DEBUG") == "1", port=8080)
