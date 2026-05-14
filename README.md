@@ -21,7 +21,7 @@ A lightweight personal price monitoring tool. Add product pages to a watch list,
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/your-username/price-checker.git
+git clone https://github.com/saundersrg/price-checker.git
 cd price-checker
 
 # 2. Install Python dependencies
