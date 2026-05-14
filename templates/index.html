@@ -46,7 +46,7 @@
       <td>{{ item.name }}</td>
       <td class="url"><a href="{{ item.url }}" target="_blank" title="{{ item.url }}">{{ item.url }}</a></td>
       <td><code>{{ item.selector }}</code></td>
-      <td class="price">{% if item.last_price is not none %}${{ "%.2f"|format(item.last_price) }}{% else %}<span style="color:#999">—</span>{% endif %}</td>
+      <td class="price">{% if item.last_price is not none %}{{ "%.2f"|format(item.last_price) }}{% else %}<span style="color:#999">—</span>{% endif %}</td>
       <td>
         <form class="inline" method="post" action="/remove">
           <input type="hidden" name="url" value="{{ item.url }}">
