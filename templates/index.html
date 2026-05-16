@@ -12,9 +12,17 @@
   th { text-align: left; padding: 6px 8px; background: #f5f5f5; border-bottom: 2px solid #ddd; }
   td { padding: 6px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
   td.price { font-weight: 600; }
-  td.url { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.url { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   td.url a { color: #555; text-decoration: none; }
   td.url a:hover { text-decoration: underline; }
+  td.sel { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.sel code { font-size: 0.8rem; }
+  dialog { border: 1px solid #ccc; border-radius: 6px; padding: 24px; width: 420px; box-shadow: 0 4px 20px rgba(0,0,0,.15); }
+  dialog h3 { margin: 0 0 16px; font-size: 1rem; }
+  dialog label { display: block; font-size: 0.85rem; color: #555; margin-bottom: 2px; margin-top: 10px; }
+  dialog input { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; box-sizing: border-box; }
+  dialog .actions { margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end; }
+  dialog::backdrop { background: rgba(0,0,0,.3); }
   .empty { color: #999; font-style: italic; padding: 12px 8px; }
   form.inline { display: inline; }
   button { cursor: pointer; font-size: 0.85rem; padding: 4px 10px; border-radius: 4px; border: 1px solid #ccc; background: #fff; }
@@ -45,10 +53,11 @@
     <tr>
       <td>{{ item.name }}</td>
       <td class="url"><a href="{{ item.url }}" target="_blank" title="{{ item.url }}">{{ item.url }}</a></td>
-      <td><code>{{ item.selector }}</code></td>
+      <td class="sel" title="{{ item.selector }}"><code>{{ item.selector }}</code></td>
       <td class="price">{% if item.last_price is not none %}{{ "%.2f"|format(item.last_price) }}{% else %}<span style="color:#999">—</span>{% endif %}</td>
       <td><a href="/trend?url={{ item.url | urlencode }}" style="font-size:0.85rem; color:#555; text-decoration:none; border:1px solid #ccc; padding:2px 8px; border-radius:4px;">Trend</a></td>
-      <td>
+      <td style="white-space:nowrap">
+        <button type="button" onclick="openEdit({{ item | tojson }})" style="margin-right:4px">Edit</button>
         <form class="inline" method="post" action="/remove">
           <input type="hidden" name="url" value="{{ item.url }}">
           <button class="danger" type="submit" onclick="return confirm('Remove {{ item.name }}?')">Remove</button>
@@ -153,6 +162,33 @@ async function testPrice() {
     btn.disabled = false;
     btn.textContent = 'Test price';
   }
+}
+</script>
+
+<dialog id="editDialog">
+  <form method="post" action="/edit">
+    <h3>Edit item</h3>
+    <input type="hidden" name="original_url" id="editOriginalUrl">
+    <label>Name</label>
+    <input name="name" id="editName" required>
+    <label>URL</label>
+    <input name="url" id="editUrl" required>
+    <label>CSS Selector</label>
+    <input name="selector" id="editSelector" required>
+    <div class="actions">
+      <button type="button" onclick="document.getElementById('editDialog').close()">Cancel</button>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+function openEdit(item) {
+  document.getElementById('editOriginalUrl').value = item.url;
+  document.getElementById('editName').value = item.name;
+  document.getElementById('editUrl').value = item.url;
+  document.getElementById('editSelector').value = item.selector;
+  document.getElementById('editDialog').showModal();
 }
 </script>
 

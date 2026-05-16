@@ -106,6 +106,13 @@ def record_price_change(item_name: str, url: str, old_price: float, new_price: f
         )
 
 
+def migrate_url(old_url: str, new_url: str):
+    """Rewrite the URL across all history tables so trends survive a URL change."""
+    with _conn() as conn:
+        for table in ("price_checks", "check_log", "price_changes"):
+            conn.execute(f"UPDATE {table} SET url = ? WHERE url = ?", (new_url, old_url))
+
+
 def get_price_changes(url: str):
     with _conn() as conn:
         return conn.execute(

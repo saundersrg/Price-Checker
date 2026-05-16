@@ -67,6 +67,27 @@ def remove():
     return redirect(url_for("index"))
 
 
+@app.route("/edit", methods=["POST"])
+def edit():
+    original_url = request.form.get("original_url", "").strip()
+    name = request.form.get("name", "").strip()
+    url = request.form.get("url", "").strip()
+    selector = request.form.get("selector", "").strip()
+    if not (original_url and name and url and selector and _validate_url(url)):
+        return redirect(url_for("index"))
+    items = _load()
+    for item in items:
+        if item["url"] == original_url:
+            item["name"] = name
+            item["selector"] = selector
+            item["url"] = url
+            break
+    _save(items)
+    if url != original_url:
+        db.migrate_url(original_url, url)
+    return redirect(url_for("index"))
+
+
 @app.route("/autodetect", methods=["POST"])
 def autodetect():
     url = request.form.get("url", "").strip()
