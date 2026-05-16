@@ -43,6 +43,7 @@ def index():
     items = _load()
     for item in items:
         item["last_price"] = db.get_last_price(item["url"])
+        item["direction"] = db.get_latest_direction(item["url"])
     return render_template("index.html", items=items)
 
 

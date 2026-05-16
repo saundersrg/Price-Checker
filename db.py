@@ -113,6 +113,16 @@ def migrate_url(old_url: str, new_url: str):
             conn.execute(f"UPDATE {table} SET url = ? WHERE url = ?", (new_url, old_url))
 
 
+def get_latest_direction(url: str):
+    """Returns 'drop', 'rise', or None based on the most recent price change."""
+    with _conn() as conn:
+        row = conn.execute(
+            "SELECT direction FROM price_changes WHERE url = ? ORDER BY changed_at DESC LIMIT 1",
+            (url,),
+        ).fetchone()
+    return row["direction"] if row else None
+
+
 def get_price_changes(url: str):
     with _conn() as conn:
         return conn.execute(

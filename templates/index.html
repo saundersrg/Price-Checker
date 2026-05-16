@@ -46,11 +46,12 @@
 {% if items %}
 <table>
   <thead>
-    <tr><th>Name</th><th>URL</th><th>Selector</th><th>Last price</th><th></th><th></th></tr>
+    <tr><th></th><th>Name</th><th>URL</th><th>Selector</th><th>Last price</th><th></th><th></th></tr>
   </thead>
   <tbody>
     {% for item in items %}
     <tr>
+      <td style="text-align:center; font-size:1rem; width:24px">{% if item.direction == 'drop' %}<span style="color:#1a7a1a">&#8595;</span>{% elif item.direction == 'rise' %}<span style="color:#c00">&#8593;</span>{% endif %}</td>
       <td>{{ item.name }}</td>
       <td class="url"><a href="{{ item.url }}" target="_blank" title="{{ item.url }}">{{ item.url }}</a></td>
       <td class="sel" title="{{ item.selector }}"><code>{{ item.selector }}</code></td>
