@@ -94,17 +94,26 @@ def cmd_check(args):
         if price is None:
             print(f"  Could not extract price — raw: '{raw}'")
             db.record_price(name, url, None, raw)
+            db.log_check(name, url, "error", None, raw)
             continue
         print(f"  ${price:.2f}  (raw: '{raw}')")
         last = db.get_last_price(url)
         db.record_price(name, url, price, raw)
         if last is None:
             print("  First check recorded.")
+            db.log_check(name, url, "first", price, raw)
         elif price < last:
             print(f"  DROP from ${last:.2f}! Sending alert...")
             notifier.send_price_drop(name, url, last, price)
+            db.log_check(name, url, "drop", price, raw)
+            db.record_price_change(name, url, last, price, "drop")
+        elif price > last:
+            print(f"  Rose from ${last:.2f}.")
+            db.log_check(name, url, "rise", price, raw)
+            db.record_price_change(name, url, last, price, "rise")
         else:
-            print(f"  No drop (was ${last:.2f}).")
+            print(f"  No change (${price:.2f}).")
+            db.log_check(name, url, "ok", price, raw)
 
 
 def cmd_history(args):

@@ -94,6 +94,24 @@ def test_price():
     return {"price": price, "raw": raw}
 
 
+@app.route("/logs")
+def logs():
+    rows = db.get_check_logs(200)
+    return render_template("logs.html", rows=rows)
+
+
+@app.route("/trend")
+def trend():
+    url = request.args.get("url", "").strip()
+    if not url or not _validate_url(url):
+        return redirect(url_for("index"))
+    items = _load()
+    item = next((i for i in items if i["url"] == url), None)
+    name = item["name"] if item else url
+    changes = db.get_price_changes(url)
+    return render_template("trend.html", name=name, url=url, changes=changes)
+
+
 if __name__ == "__main__":
     db.init_db()
     app.run(debug=os.getenv("FLASK_DEBUG") == "1", port=8080)

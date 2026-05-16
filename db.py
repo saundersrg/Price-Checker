@@ -22,6 +22,28 @@ def init_db():
                 checked_at TEXT DEFAULT (datetime('now', 'localtime'))
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS check_log (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_name  TEXT NOT NULL,
+                url        TEXT NOT NULL,
+                result     TEXT NOT NULL,
+                price      REAL,
+                raw_price  TEXT,
+                checked_at TEXT DEFAULT (datetime('now', 'localtime'))
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS price_changes (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_name  TEXT NOT NULL,
+                url        TEXT NOT NULL,
+                old_price  REAL NOT NULL,
+                new_price  REAL NOT NULL,
+                direction  TEXT NOT NULL,
+                changed_at TEXT DEFAULT (datetime('now', 'localtime'))
+            )
+        """)
 
 
 def record_price(item_name: str, url: str, price, raw_price: str):
@@ -56,4 +78,38 @@ def get_all_history(limit: int = 50):
             "SELECT item_name, url, price, raw_price, checked_at FROM price_checks "
             "ORDER BY checked_at DESC LIMIT ?",
             (limit,),
+        ).fetchall()
+
+
+def log_check(item_name: str, url: str, result: str, price, raw_price: str):
+    with _conn() as conn:
+        conn.execute(
+            "INSERT INTO check_log (item_name, url, result, price, raw_price) VALUES (?, ?, ?, ?, ?)",
+            (item_name, url, result, price, raw_price),
+        )
+
+
+def get_check_logs(limit: int = 200):
+    with _conn() as conn:
+        return conn.execute(
+            "SELECT item_name, url, result, price, raw_price, checked_at FROM check_log "
+            "ORDER BY checked_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+
+
+def record_price_change(item_name: str, url: str, old_price: float, new_price: float, direction: str):
+    with _conn() as conn:
+        conn.execute(
+            "INSERT INTO price_changes (item_name, url, old_price, new_price, direction) VALUES (?, ?, ?, ?, ?)",
+            (item_name, url, old_price, new_price, direction),
+        )
+
+
+def get_price_changes(url: str):
+    with _conn() as conn:
+        return conn.execute(
+            "SELECT item_name, old_price, new_price, direction, changed_at FROM price_changes "
+            "WHERE url = ? ORDER BY changed_at DESC",
+            (url,),
         ).fetchall()
