@@ -57,7 +57,7 @@
       <td class="price">{% if item.last_price is not none %}{{ "%.2f"|format(item.last_price) }}{% else %}<span style="color:#999">—</span>{% endif %}</td>
       <td><a href="/trend?url={{ item.url | urlencode }}" style="font-size:0.85rem; color:#555; text-decoration:none; border:1px solid #ccc; padding:2px 8px; border-radius:4px;">Trend</a></td>
       <td style="white-space:nowrap">
-        <button type="button" onclick="openEdit({{ item | tojson }})" style="margin-right:4px">Edit</button>
+        <button type="button" onclick="openEdit(this)" data-name="{{ item.name }}" data-url="{{ item.url }}" data-selector="{{ item.selector }}" style="margin-right:4px">Edit</button>
         <form class="inline" method="post" action="/remove">
           <input type="hidden" name="url" value="{{ item.url }}">
           <button class="danger" type="submit" onclick="return confirm('Remove {{ item.name }}?')">Remove</button>
@@ -183,11 +183,11 @@ async function testPrice() {
 </dialog>
 
 <script>
-function openEdit(item) {
-  document.getElementById('editOriginalUrl').value = item.url;
-  document.getElementById('editName').value = item.name;
-  document.getElementById('editUrl').value = item.url;
-  document.getElementById('editSelector').value = item.selector;
+function openEdit(btn) {
+  document.getElementById('editOriginalUrl').value = btn.dataset.url;
+  document.getElementById('editName').value = btn.dataset.name;
+  document.getElementById('editUrl').value = btn.dataset.url;
+  document.getElementById('editSelector').value = btn.dataset.selector;
   document.getElementById('editDialog').showModal();
 }
 </script>
